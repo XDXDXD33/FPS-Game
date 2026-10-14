@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#08111d">
+  <meta name="description" content="FPS-Game: a lightweight browser-based 3D first-person shooter.">
+  <title>FPS // Training Ground</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}
+  </script>
+</head>
+<body>
+  <main id="game-root">
+    <div id="hud" aria-live="polite">
+      <section class="hud-card top-left">
+        <div class="eyebrow">FPS <span>//</span> TRAINING GROUND</div>
+        <div class="mission-line"><span class="live-dot"></span><span id="mission-status">READY TO DEPLOY</span></div>
+        <div class="subline" id="kill-count">HOSTILES 00 / 08</div>
+      </section>
+      <section class="hud-card bottom-left">
+        <div class="hud-label">VITALS <span id="health-value">100</span></div>
+        <div class="bar"><div id="health-fill" class="bar-fill"></div></div>
+        <div class="ammo-row"><span>AMMO</span><strong id="ammo-value">12 <i>/</i> 72</strong></div>
+        <div class="subline" id="hint">WASD MOVE · MOUSE AIM · CLICK FIRE</div>
+      </section>
+      <div id="crosshair" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div id="hit-marker" aria-hidden="true">×</div>
+      <div id="toast" role="status"></div>
+    </div>
+    <section id="overlay" class="overlay">
+      <div class="overlay-grid"></div>
+      <div class="overlay-panel">
+        <div class="eyebrow">FIELD SIMULATION <span> / 001</span></div>
+        <h1 id="overlay-title">FPS<span>-</span>GAME</h1>
+        <p class="lead" id="overlay-lead">TRAINING GROUND</p>
+        <p id="overlay-copy">清除訓練場內的所有敵人。準備好就進場。</p>
+        <div class="controls">
+          <span><b>W A S D</b> 移動</span><span><b>MOUSE</b> 瞄準</span>
+          <span><b>CLICK</b> 射擊</span><span><b>R</b> 換彈</span>
+          <span><b>SHIFT</b> 奔跑</span><span><b>SPACE</b> 跳躍</span>
+        </div>
+        <button id="start-button">開始任務 <span>↗</span></button>
+        <p class="microcopy">DESKTOP + MOBILE · NO INSTALL REQUIRED</p>
+      </div>
+    </section>
+    <section id="mobile-controls" aria-label="手機控制">
+      <div id="stick-zone"><div id="stick-base"><div id="stick-knob"></div></div><span>MOVE</span></div>
+      <div id="look-zone"></div>
+      <div class="mobile-actions">
+        <button id="jump-button" class="touch-button">跳躍</button>
+        <button id="reload-button" class="touch-button">換彈</button>
+        <button id="fire-button" class="fire-button">FIRE</button>
+      </div>
+    </section>
+    <div id="loading" class="loading"><span></span> INITIALIZING SIMULATION</div>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
