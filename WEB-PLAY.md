@@ -32,11 +32,17 @@ Mobile:
 
 ## Publish with GitHub Pages
 
-The workflow at `.github/workflows/deploy-pages.yml` publishes the `web/` folder to GitHub Pages when changes are pushed to `main`. In repository Settings → Pages, choose **GitHub Actions** as the build and deployment source if it is not already enabled. After the workflow succeeds, the game URL is typically:
+1. Open this repository's **Settings → Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions** and save.
+3. Open the **Actions** tab and select **Deploy browser FPS to GitHub Pages**.
+4. Select **Run workflow** on the `main` branch if the latest run did not automatically start after enabling Pages.
+5. Wait until the run succeeds. The game URL is typically:
 
-`https://xdxdx33.github.io/FPS-Game/`
+   `https://xdxdx33.github.io/FPS-Game/`
 
-The deployed version is static and does not need a game server. The first visit needs an internet connection for the Three.js CDN import.
+The workflow publishes only the `web/` folder. The deployed version is static and does not need a game server. The first visit needs an internet connection for the Three.js CDN import.
+
+The workflow cannot enable the Pages site itself because the connected GitHub integration does not have permission to create repository Pages settings. Enable Pages once manually as described above; subsequent pushes to `web/` will deploy automatically.
 
 ## Current scope
 
