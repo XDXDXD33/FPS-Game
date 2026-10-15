@@ -1,62 +1,25 @@
 # FPS-Game
 
-A small, self-contained 3D first-person shooter prototype made with **Godot 4 + GDScript**. The arena is built procedurally from primitive meshes, so the project does not need third-party assets.
+This repository contains the original Godot project and a separate browser-playable exploration game.
 
-## Features
+## Play in your browser
 
-- First-person mouse-look and CharacterBody3D movement
-- WASD movement, sprinting, jumping, shooting, and reloading
-- Hitscan shooting with a visible first-person weapon
-- Enemy AI that chases the player and attacks at close range
-- Health, ammunition, kill count, mission-complete and mission-failed screens
-- Procedurally built training arena with walls and cover
-- No external asset downloads or add-on dependencies
+Open **https://xdxdx33.github.io/FPS-Game/** after GitHub Pages finishes deploying. The homepage is a playable canvas game, not just a text guide.
 
-## Requirements
+### Browser game controls
 
-- Godot **4.2 or newer** (Godot 4.x recommended)
-- Windows, macOS, or Linux desktop
+- **WASD** or **arrow keys**: move
+- **Touch controls**: use the on-screen directional pad on phones
+- Collect all **8 light shards**
+- Avoid the roaming garden guardians
+- If you pause, select **Continue Exploring** to resume
 
-## Run
+The browser game uses plain HTML, CSS, and JavaScript, so it does not need installation or external assets.
 
-1. Download or clone this repository.
-2. Open Godot Project Manager.
-3. Click **Import** and select the `project.godot` file in this folder.
-4. Open the project and press **F6** (current scene) or **F5** (project).
-5. Click **開始任務** to begin. The mouse is captured while playing.
+## Original Godot project
 
-## Controls
+The original Godot project remains in the repository (`project.godot`, `scenes/`, and `scripts/`). Open the folder in Godot 4.x to work with that project.
 
-| Action | Control |
-|---|---|
-| Move | `W` `A` `S` `D` |
-| Look / aim | Mouse |
-| Fire | Left mouse button |
-| Reload | `R` |
-| Sprint | `Shift` |
-| Jump | `Space` |
-| Release mouse | `Esc` |
+## GitHub Pages
 
-Click the start/retry button to begin a round. Defeat all eight hostiles to win. If your health reaches zero, choose restart to try again.
-
-## Project layout
-
-```text
-FPS-Game/
-├── project.godot
-├── README.md
-├── LICENSE
-├── .gitignore
-├── scenes/
-│   ├── main.tscn
-│   ├── player.tscn
-│   └── enemy.tscn
-└── scripts/
-    ├── main.gd
-    ├── player.gd
-    └── enemy.gd
-```
-
-## Notes / next improvements
-
-This is a playable prototype rather than a finished commercial game. The arena and characters use simple primitive geometry. Possible next steps include sound effects, weapon switching, better enemy navigation/pathfinding, settings, more levels, and export presets.
+The root `index.html` is the playable homepage. The Actions deployment workflow publishes the `web/` folder, which contains the same browser game. In **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**. After a push to `web/`, check the Actions tab and wait for the deployment workflow to succeed before testing the live URL.
