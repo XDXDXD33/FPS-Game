@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#091321">
+<title>光境漫遊｜Playable Web Game</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#091321;color:#eaf6ff;touch-action:none}#game{display:block;width:100%;height:100%;}#hud{position:fixed;inset:0;pointer-events:none;padding:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.panel{background:#07111dd9;border:1px solid #6ee7e788;border-radius:14px;padding:12px 15px;box-shadow:0 8px 30px #0004;backdrop-filter:blur(8px)}.title{font-weight:900;letter-spacing:.14em;color:#82f4e7;font-size:13px}.sub{font-size:12px;color:#b6cad9;margin-top:5px}.right{text-align:right}#message{position:fixed;left:50%;top:18%;transform:translateX(-50%);max-width:min(90vw,520px);text-align:center;background:#07111deF;border:1px solid #78f1e6;border-radius:18px;padding:24px;box-shadow:0 15px 60px #0008}#message h1{margin:0 0 8px;font-size:clamp(24px,5vw,42px);letter-spacing:.05em}#message p{line-height:1.6;color:#c3d5e3;margin:8px 0 18px}button{border:0;border-radius:12px;background:#82f4e7;color:#08202a;font-weight:900;padding:12px 20px;font-size:15px;cursor:pointer;pointer-events:auto}#message small{display:block;color:#829bac;margin-top:12px}#touch{position:fixed;bottom:18px;left:18px;right:18px;display:none;justify-content:space-between;align-items:end;pointer-events:none}.pad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:5px;pointer-events:auto}.pad button,.action{background:#102b3bce;color:#eaf6ff;border:1px solid #8ceee877;border-radius:13px;padding:0;font-size:20px;width:48px;height:48px;touch-action:none}.pad .up{grid-column:2}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}.action{width:auto;padding:0 16px;font-size:13px;height:48px}#toast{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:900;text-shadow:0 3px 18px #000;pointer-events:none;opacity:0;transition:opacity .2s}#toast.show{opacity:1}@media(max-width:760px),(pointer:coarse){#touch{display:flex}#hud{padding:10px}.panel{padding:9px 11px}.sub{font-size:10px}#message{top:12%;padding:18px}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="光境漫遊遊戲畫面"></canvas>
+<div id="hud"><div class="panel"><div class="title">光境漫遊 / LUMEN TRAIL</div><div class="sub">收集光之碎片，避開巡遊守望者</div></div><div class="panel right"><div class="title" id="count">光之碎片 0 / 8</div><div class="sub" id="status">探索中</div></div></div>
+<div id="message"><h1 id="heading">光境漫遊</h1><p id="intro">在靜謐的發光庭園中自由探索。收集 8 顆光之碎片，並避開巡遊的守望者。<br><b>WASD / 方向鍵</b> 移動，手機可使用畫面左下角方向鍵。</p><button id="start">開始探索</button><small>無需安裝 · 電腦與手機皆可遊玩</small></div>
+<div id="touch"><div class="pad"><button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button><button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button></div><button class="action" id="touch-pause">暫停</button></div><div id="toast"></div>
+<script>
+(()=>{const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),msg=document.querySelector('#message'),heading=document.querySelector('#heading'),intro=document.querySelector('#intro'),start=document.querySelector('#start'),count=document.querySelector('#count'),status=document.querySelector('#status'),toast=document.querySelector('#toast');let W=0,H=0,dpr=1,running=false,won=false,keys=new Set(),last=0,toastT=0,score=0;
+const world={w:1800,h:1300};const player={x:900,y:650,r:15,speed:235};let shards=[],guardians=[],trees=[],particles=[];
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+function reset(){score=0;player.x=900;player.y=650;shards=[];guardians=[];trees=[];particles=[];for(let i=0;i<8;i++){let x,y;do{x=100+Math.random()*1600;y=100+Math.random()*1100}while(Math.hypot(x-player.x,y-player.y)<180);shards.push({x,y,got:false,phase:Math.random()*6.28})}for(let i=0;i<7;i++){guardians.push({x:130+Math.random()*1540,y:100+Math.random()*1100,r:20,phase:Math.random()*6.28,base:65+Math.random()*35})}for(let i=0;i<80;i++)trees.push({x:40+Math.random()*1720,y:40+Math.random()*1220,r:8+Math.random()*17,shade:Math.random()})count.textContent='光之碎片 0 / 8';status.textContent='探索中'}
+function pop(text){toast.textContent=text;toast.classList.add('show');toastT=1.1}
+function circle(x,y,r,color,glow=''){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;if(glow){ctx.shadowColor=glow;ctx.shadowBlur=18}ctx.fill();ctx.shadowBlur=0}
+function draw(t,dt){ctx.clearRect(0,0,W,H);let camX=Math.max(0,Math.min(world.w-W,player.x-W/2)),camY=Math.max(0,Math.min(world.h-H,player.y-H/2));ctx.save();ctx.translate(-camX,-camY);
+let grd=ctx.createLinearGradient(0,0,world.w,world.h);grd.addColorStop(0,'#142c38');grd.addColorStop(.5,'#183a3d');grd.addColorStop(1,'#102631');ctx.fillStyle=grd;ctx.fillRect(0,0,world.w,world.h);
+ctx.strokeStyle='#75e8d015';ctx.lineWidth=1;for(let x=0;x<world.w;x+=64){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,world.h);ctx.stroke()}for(let y=0;y<world.h;y+=64){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(world.w,y);ctx.stroke()}
+ctx.strokeStyle='#6ce5d866';ctx.lineWidth=5;ctx.strokeRect(12,12,world.w-24,world.h-24);
+for(const tr of trees){circle(tr.x,tr.y+5,tr.r,'#071a20');circle(tr.x,tr.y,tr.r,tr.shade>.5?'#286052':'#235348');circle(tr.x-tr.r*.25,tr.y-tr.r*.25,tr.r*.42,'#4b8970')}
+for(const s of shards){if(s.got)continue;let pulse=1+Math.sin(t*.004+s.phase)*.17;ctx.save();ctx.translate(s.x,s.y);ctx.rotate(t*.0008+s.phase);ctx.shadowColor='#8effe5';ctx.shadowBlur=25;ctx.fillStyle='#a6fff0';ctx.beginPath();ctx.moveTo(0,-13*pulse);ctx.lineTo(9*pulse,0);ctx.lineTo(0,13*pulse);ctx.lineTo(-9*pulse,0);ctx.closePath();ctx.fill();ctx.restore()}
+for(const g of guardians){let gx=g.x+Math.cos(t*.0005+g.phase)*g.base,gy=g.y+Math.sin(t*.00065+g.phase)*g.base;g.drawX=gx;g.drawY=gy;circle(gx,gy+8,g.r,'#09171d');circle(gx,gy,g.r,'#d69a5b','#f7b85e');circle(gx,gy,8,'#ffe6a6');ctx.strokeStyle='#f7b85e77';ctx.lineWidth=2;ctx.beginPath();ctx.arc(gx,gy,g.r+8,0,Math.PI*2);ctx.stroke()}
+circle(player.x,player.y+7,player.r,'#071820');circle(player.x,player.y,player.r,'#67e9e0','#61f4e5');circle(player.x-4,player.y-5,5,'#e7fffa');ctx.strokeStyle='#d5fff9';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(player.x+Math.cos(player.facing||0)*22,player.y+Math.sin(player.facing||0)*22);ctx.stroke();
+ctx.restore();
+if(running&&!won){let dx=0,dy=0;if(keys.has('w')||keys.has('ArrowUp'))dy--;if(keys.has('s')||keys.has('ArrowDown'))dy++;if(keys.has('a')||keys.has('ArrowLeft'))dx--;if(keys.has('d')||keys.has('ArrowRight'))dx++;if(dx||dy){let len=Math.hypot(dx,dy);dx/=len;dy/=len;player.x=Math.max(35,Math.min(world.w-35,player.x+dx*player.speed*dt));player.y=Math.max(35,Math.min(world.h-35,player.y+dy*player.speed*dt));player.facing=Math.atan2(dy,dx)}
+for(const s of shards){if(!s.got&&Math.hypot(player.x-s.x,player.y-s.y)<30){s.got=true;score++;count.textContent='光之碎片 '+score+' / 8';pop('✨ 收集到光之碎片！');for(let i=0;i<10;i++)particles.push({x:s.x,y:s.y,vx:(Math.random()-.5)*150,vy:(Math.random()-.5)*150,life:.5})}}
+for(const g of guardians){if(Math.hypot(player.x-g.drawX,player.y-g.drawY)<player.r+g.r){player.x-=Math.cos(Math.atan2(player.y-g.drawY,player.x-g.drawX))*170*dt;player.y-=Math.sin(Math.atan2(player.y-g.drawY,player.x-g.drawX))*170*dt;player.x=Math.max(35,Math.min(world.w-35,player.x));player.y=Math.max(35,Math.min(world.h-35,player.y));status.textContent='守望者靠近了！';}}
+if(guardians.every(g=>Math.hypot(player.x-g.drawX,player.y-g.drawY)>100))status.textContent='探索中';
+if(score===8){won=true;running=false;heading.textContent='庭園已點亮！';intro.innerHTML='你收集了全部 8 顆光之碎片，讓光境重新閃耀。<br>想再漫遊一次嗎？';start.textContent='再次探索';msg.style.display='block';status.textContent='完成'} }
+for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;circle(p.x,p.y,3,'#a6fff0')}particles=particles.filter(p=>p.life>0);if(toastT>0){toastT-=dt;if(toastT<=0)toast.classList.remove('show')}
+}
+function frame(now){let dt=Math.min(.033,(now-last)/1000||0);last=now;draw(now,dt);requestAnimationFrame(frame)}requestAnimationFrame(frame);
+start.addEventListener('click',()=>{if(won||!running)reset();running=true;won=false;msg.style.display='none';canvas.focus()});
+addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.length===1?e.key.toLowerCase():e.key);if(e.key==='Escape'&&running){running=false;msg.style.display='block';heading.textContent='暫停探索';intro.textContent='休息一下，準備好再繼續。';start.textContent='繼續探索'}});
+addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));addEventListener('blur',()=>keys.clear());
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;const down=e=>{e.preventDefault();keys.add(k)},up=e=>{e.preventDefault();keys.delete(k)};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
+document.querySelector('#touch-pause').addEventListener('click',()=>{if(running){running=false;msg.style.display='block';heading.textContent='暫停探索';intro.textContent='休息一下，準備好再繼續。';start.textContent='繼續探索'}else if(!won){running=true;msg.style.display='none'}});
+reset();
+})();
+</script>
+</body></html>
